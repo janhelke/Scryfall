@@ -2,97 +2,102 @@
 
 namespace Tests\Endpoint;
 
+use Exception;
+use Janhelke\Scryfall\Exception\ScryfallException;
+use Janhelke\Scryfall\Responses\Card;
+use Janhelke\Scryfall\Responses\CardFace;
+use Janhelke\Scryfall\Responses\Cards;
+use stdClass;
 use Tests\TestCase;
-use Ypho\Scryfall\Exception\ScryfallException;
-use Ypho\Scryfall\Responses\Card;
-use Ypho\Scryfall\Responses\CardFace;
-use Ypho\Scryfall\Responses\Cards;
 
 class CardsTest extends TestCase
 {
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
+     * @throws Exception
      */
-    public function testAllCards()
+    public function testAllCards(): void
     {
         $client = $this->getMockedClient('cards/all.json');
-        $cards = $client->cards()->all(1);
+        $cards = $client->cards()->all();
 
-        $this->assertInstanceOf(Cards::class, $cards);
-        $this->assertContainsOnlyInstancesOf(Card::class, $cards->getIterator());
+        self::assertInstanceOf(Cards::class, $cards);
+        self::assertContainsOnlyInstancesOf(Card::class, $cards->getIterator());
     }
 
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
      */
-    public function testGetSaheeliTheGifted()
+    public function testGetSaheeliTheGifted(): void
     {
         $client = $this->getMockedClient('cards/saheeli_the_gifted.json');
         $card = $client->cards()->get('b32b3dae-7616-46ad-b9bf-854559cda977');
 
-        $this->assertEquals('normal', $card->layout);
-        $this->assertEquals('4', $card->loyalty);
-        $this->assertEquals(true, $card->isOversized);
-        $this->assertEquals(false, $card->isNonFoil);
-        $this->assertInstanceOf(Card::class, $card);
+        self::assertEquals('normal', $card->layout);
+        self::assertEquals('4', $card->loyalty);
+        self::assertTrue($card->isOversized);
+        self::assertFalse($card->isNonFoil);
+        self::assertInstanceOf(Card::class, $card);
     }
 
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
      */
-    public function testGetDelverOfSecrets()
+    public function testGetDelverOfSecrets(): void
     {
         $client = $this->getMockedClient('cards/delver_of_secrets.json');
         $card = $client->cards()->get('11bf83bb-c95b-4b4f-9a56-ce7a1816307a');
 
-        $this->assertEquals('transform', $card->layout);
-        $this->assertInstanceOf(Card::class, $card);
-        $this->assertContainsOnlyInstancesOf(CardFace::class, $card->getFaces());
+        self::assertEquals('transform', $card->layout);
+        self::assertInstanceOf(Card::class, $card);
+        self::assertContainsOnlyInstancesOf(CardFace::class, $card->getFaces());
     }
 
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
      */
-    public function testGetGrafRats()
+    public function testGetGrafRats(): void
     {
         $client = $this->getMockedClient('cards/graf_rats.json');
         $card = $client->cards()->get('3dedaff6-bd69-4fe3-a301-f7ea7c2f2861');
 
-        $this->assertEquals('meld', $card->layout);
-        $this->assertInstanceOf(Card::class, $card);
-        $this->assertContainsOnlyInstancesOf(\stdClass::class, $card->getRelated());
+        self::assertEquals('meld', $card->layout);
+        self::assertInstanceOf(Card::class, $card);
+        self::assertContainsOnlyInstancesOf(stdClass::class, $card->getRelated());
     }
 
     /**
      * @throws ScryfallException
+     * @throws Exception
      */
-    public function testSearchDefault()
+    public function testSearchDefault(): void
     {
         $client = $this->getMockedClient('cards/search_default.json');
         $cards = $client->cards()->search('pacifism');
 
-        $this->assertInstanceOf(Cards::class, $cards);
+        self::assertInstanceOf(Cards::class, $cards);
         $this->assertequals(1, $cards->total());
-        $this->assertContainsOnlyInstancesOf(Card::class, $cards->getIterator());
+        self::assertContainsOnlyInstancesOf(Card::class, $cards->getIterator());
     }
 
     /**
      * @throws ScryfallException
+     * @throws Exception
      */
-    public function testSearchUniqueArts()
+    public function testSearchUniqueArts(): void
     {
         $client = $this->getMockedClient('cards/search_unique_art.json');
         $cards = $client->cards()->search('lightning helix', 'art');
 
-        $this->assertInstanceOf(Cards::class, $cards);
+        self::assertInstanceOf(Cards::class, $cards);
         $this->assertequals(3, $cards->total());
-        $this->assertContainsOnlyInstancesOf(Card::class, $cards->getIterator());
+        self::assertContainsOnlyInstancesOf(Card::class, $cards->getIterator());
     }
 
     /**
      * @throws ScryfallException
      */
-    public function testSearchNoResults()
+    public function testSearchNoResults(): void
     {
         $client = $this->getMockedClient('cards/search_no_results.json', 404);
 

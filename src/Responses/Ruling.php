@@ -1,37 +1,33 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
+use JsonException;
 
 /**
  * Class Ruling
- * @package Scryfall\Responses
  */
 class Ruling extends Base
 {
-    /** @var string */
-    public $object;
+    public string $object;
 
-    /** @var string */
-    public $source;
+    public string $source;
 
-    /** @var string */
-    public $published;
+    public string $published;
 
-    /** @var string */
-    public $comment;
+    public string $comment;
 
     /**
      * Set constructor.
      * @param $data
-     * @param bool $initialize
+     * @throws JsonException
      */
-    function __construct($data, $initialize = true)
+    public function __construct($data, bool $initialize = true)
     {
-        if($data instanceof Response) {
-            parent::__construct($data);
-            $data = json_decode($data->getBody()->getContents());
+        if ($data instanceof Response) {
+            parent::__construct($data, $initialize);
+            $data = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
         } else {
             parent::__construct(null, false);
         }

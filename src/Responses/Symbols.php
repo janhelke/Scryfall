@@ -1,32 +1,30 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
-use Traversable;
-use Ypho\Scryfall\Responses\Symbol;
-use Ypho\Scryfall\ScryfallIterator;
+use IteratorAggregate;
+use Janhelke\Scryfall\ScryfallIterator;
+use JsonException;
 
 /**
  * Class Sets
  * https://scryfall.com/docs/api/card-symbols/all
- *
- * @package Scryfall\Responses
  */
-class Symbols extends Base implements \IteratorAggregate
+class Symbols extends Base implements IteratorAggregate
 {
     /** @var Symbol[] */
-    protected $symbols = [];
+    protected array $symbols = [];
 
     /**
      * Expansions constructor.
-     * @param Response $data
+     * @throws JsonException
      */
-    function __construct(Response $data)
+    public function __construct(Response $data)
     {
         parent::__construct($data);
 
-        $response = json_decode($data->getBody()->getContents());
+        $response = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
         if (!$this->hasError) {
             // Set some collection data
@@ -38,10 +36,7 @@ class Symbols extends Base implements \IteratorAggregate
         }
     }
 
-    /**
-     * @return Traversable|ScryfallIterator
-     */
-    public function getIterator()
+    public function getIterator(): ScryfallIterator
     {
         return new ScryfallIterator($this->symbols);
     }
@@ -49,7 +44,7 @@ class Symbols extends Base implements \IteratorAggregate
     /**
      * @return Symbol[]
      */
-    public function symbols()
+    public function symbols(): array
     {
         return $this->symbols;
     }

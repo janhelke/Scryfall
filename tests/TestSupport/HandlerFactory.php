@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\TestSupport;
 
 use GuzzleHttp\Handler\MockHandler;
@@ -7,42 +8,26 @@ use GuzzleHttp\Psr7\Response;
 
 class HandlerFactory
 {
-    /**
-     * @param string $file
-     * @param int $statusCode
-     * @return HandlerStack
-     */
-    public static function getHandler(string $file, int $statusCode = 200)
+    public static function getHandler(string $file, int $statusCode = 200): HandlerStack
     {
         return self::getHandlerForResponse(self::getResponse($file, $statusCode));
     }
 
-    protected static function getHandlerForResponse($response)
+    protected static function getHandlerForResponse($response): HandlerStack
     {
         $mock = new MockHandler([
-            $response
+            $response,
         ]);
 
-        $handler = HandlerStack::create($mock);
-
-        return $handler;
+        return HandlerStack::create($mock);
     }
 
-    /**
-     * @param string $file
-     * @param int $statusCode
-     * @return Response
-     */
-    protected static function getResponse(string $file, int $statusCode = 200)
+    protected static function getResponse(string $file, int $statusCode = 200): Response
     {
         return new Response($statusCode, ['Content-Type' => 'application/json'], self::getContents('/responses/' . $file));
     }
 
-    /**
-     * @param $filename
-     * @return bool|string
-     */
-    protected static function getContents(string $filename)
+    protected static function getContents(string $filename): string|bool
     {
         return file_get_contents(__DIR__ . $filename);
     }

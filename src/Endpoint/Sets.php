@@ -1,53 +1,49 @@
 <?php
 
-namespace Ypho\Scryfall\Endpoint;
+namespace Janhelke\Scryfall\Endpoint;
 
-use Ypho\Scryfall\Client;
-use Ypho\Scryfall\Exception\ScryfallException;
-use Ypho\Scryfall\Responses\Set;
+use Exception;
+use Janhelke\Scryfall\Client;
+use Janhelke\Scryfall\Exception\ScryfallException;
+use Janhelke\Scryfall\Responses\Set;
 
 class Sets
 {
-    /** @var Client */
-    protected $client;
+    protected Client $client;
 
     /**
      * Account constructor.
      * @param $client
      */
-    function __construct($client)
+    public function __construct($client)
     {
         $this->client = $client;
     }
 
     /**
-     * @return \Ypho\Scryfall\Responses\Sets
      * @throws ScryfallException
      */
-    public function all()
+    public function all(): \Janhelke\Scryfall\Responses\Sets
     {
         try {
             $response = $this->client->send('GET', 'sets');
-            $sets = new \Ypho\Scryfall\Responses\Sets($response);
-            return $sets;
-        } catch (\Exception $ex) {
-            throw new ScryfallException($ex->getMessage(), $ex->getCode());
+            return new \Janhelke\Scryfall\Responses\Sets($response);
+        } catch (Exception $exception) {
+            throw new ScryfallException($exception->getMessage(), $exception->getCode());
         }
     }
 
     /**
      * @param $code
-     * @return Set
      * @throws ScryfallException
      */
-    public function get($code)
+    public function get($code): Set
     {
         try {
             $response = $this->client->send('GET', 'sets/' . $code);
-            $set = new Set($response);
-            return $set;
-        } catch (\Exception $ex) {
-            throw new ScryfallException($ex->getMessage(), $ex->getCode());
+            return new Set($response);
+        } catch (Exception $exception) {
+            throw new ScryfallException($exception->getMessage(), $exception->getCode());
         }
     }
 }

@@ -1,72 +1,60 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
+use JsonException;
+use stdClass;
 
 /**
  * Class CardFace
  * https://scryfall.com/docs/api/cards#card-face-objects
- *
- * @package Scryfall\Responses
  */
 class CardFace extends Base
 {
-    /** @var string */
-    public $object;
+    public string $object;
 
-    /** @var string */
-    public $name;
+    public string $name;
 
-    /** @var string */
-    public $manaCost;
+    public string $manaCost;
 
-    /** @var string */
-    public $type;
+    public string $type;
 
-    /** @var string */
-    public $oracleText;
+    public string $oracleText;
 
-    /** @var string */
-    public $flavorText;
+    public string $flavorText;
 
-    /** @var string */
-    public $power;
+    public string $power;
 
-    /** @var string */
-    public $toughness;
+    public string $toughness;
 
-    /** @var string */
-    public $loyalty;
+    public string $loyalty;
 
     /** @var string[] */
-    public $colors;
+    public array $colors = [];
 
     /** @var string[] */
-    public $colorIndicator;
+    public array $colorIndicator = [];
 
     /** @var string[] */
-    public $images;
+    public stdClass|array $images = [];
 
-    /** @var string */
-    public $printedName;
+    public string $printedName;
 
-    /** @var string */
-    public $printedText;
+    public string $printedText;
 
-    /** @var string */
-    public $printedType;
+    public string $printedType;
 
     /**
      * Set constructor.
      * @param $data
-     * @param bool $initialize
+     * @throws JsonException
      */
-    function __construct($data, $initialize = true)
+    public function __construct($data, bool $initialize = true)
     {
-        if($data instanceof Response) {
-            parent::__construct($data);
-            $data = json_decode($data->getBody()->getContents());
+        if ($data instanceof Response) {
+            parent::__construct($data, $initialize);
+            $data = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
         } else {
             parent::__construct(null, false);
         }
@@ -86,10 +74,10 @@ class CardFace extends Base
         $this->printedText = @$data->printed_text;
         $this->printedType = @$data->printed_type_line;
 
-        if(isset($data->image_uris)) {
+        if (property_exists($data, 'image_uris') && $data->image_uris !== null) {
             $images = $data->image_uris;
 
-            $this->images = new \stdClass();
+            $this->images = new stdClass();
             $this->images->small = @$images->small;
             $this->images->normal = @$images->normal;
             $this->images->large = @$images->large;

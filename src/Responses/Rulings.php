@@ -1,30 +1,30 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
-use Ypho\Scryfall\ScryfallIterator;
+use IteratorAggregate;
+use Janhelke\Scryfall\ScryfallIterator;
+use JsonException;
 
 /**
  * Class Rulings
  * https://scryfall.com/docs/api/rulings
- *
- * @package Scryfall\Responses
  */
-class Rulings extends Base implements \IteratorAggregate
+class Rulings extends Base implements IteratorAggregate
 {
     /** @var Ruling[] */
-    protected $rulings = [];
+    protected array $rulings = [];
 
     /**
      * Expansions constructor.
-     * @param Response $data
+     * @throws JsonException
      */
-    function __construct(Response $data)
+    public function __construct(Response $data)
     {
         parent::__construct($data);
 
-        $response = json_decode($data->getBody()->getContents());
+        $response = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
         if (!$this->hasError) {
             // Set some collection data
@@ -34,14 +34,9 @@ class Rulings extends Base implements \IteratorAggregate
                 $this->rulings[] = new Ruling($ruling, false);
             }
         }
-
-        return $this->getIterator();
     }
 
-    /**
-     * @return ScryfallIterator|\Traversable
-     */
-    public function getIterator()
+    public function getIterator(): ScryfallIterator
     {
         return new ScryfallIterator($this->rulings);
     }
@@ -49,7 +44,7 @@ class Rulings extends Base implements \IteratorAggregate
     /**
      * @return Ruling[]
      */
-    public function rulings()
+    public function rulings(): array
     {
         return $this->rulings;
     }

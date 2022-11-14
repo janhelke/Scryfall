@@ -3,7 +3,7 @@ This wrapper connects with the Scryfall API.
 
 ## Installation
 You can use composer to require the package, it will automatically install.
-> composer require ypho/scryfall ^1.0
+> composer require janhelke/scryfall ^1.0
 
 ### Testing the package
 In this package there are several tests. The responses are mocked, so it won't actually spam the Scryfall API.
@@ -13,7 +13,7 @@ In this package there are several tests. The responses are mocked, so it won't a
 ### Initialize new client
 ```php
 include 'vendor/autoload.php';
-$client = new Ypho\Scryfall\Client();
+$client = new Janhelke\Scryfall\Client();
 ```
 ### Sets
 ```php

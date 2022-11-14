@@ -1,58 +1,47 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
+use JsonException;
 
 /**
  * Class Symbol
- * @package Scryfall\Responses
  */
 class Symbol extends Base
 {
-    /** @var string */
-    public $object;
+    public string $object;
 
-    /** @var string */
-    public $symbol;
+    public string $symbol;
 
-    /** @var string */
-    public $looseSymbol;
+    public string $looseSymbol;
 
-    /** @var string */
-    public $description;
+    public string $description;
 
-    /** @var bool */
-    public $transposable;
+    public bool $transposable;
 
-    /** @var string */
-    public $representsMana;
+    public string $representsMana;
 
-    /** @var string */
-    public $appearsInManacost;
+    public string $appearsInManacost;
 
-    /** @var int */
-    public $cmc;
+    public int $cmc;
 
-    /** @var bool */
-    public $isFunny;
+    public bool $isFunny;
 
-    /** @var array */
-    public $colors;
+    public array $colors = [];
 
-    /** @var array */
-    public $alternates;
+    public array $alternates = [];
 
     /**
      * Set constructor.
      * @param $data
-     * @param bool $initialize
+     * @throws JsonException
      */
-    function __construct($data, $initialize = true)
+    public function __construct($data, bool $initialize = true)
     {
-        if($data instanceof Response) {
-            parent::__construct($data);
-            $data = json_decode($data->getBody()->getContents());
+        if ($data instanceof Response) {
+            parent::__construct($data, $initialize);
+            $data = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
         } else {
             parent::__construct(null, false);
         }

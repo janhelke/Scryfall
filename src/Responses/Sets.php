@@ -1,30 +1,30 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
-use Ypho\Scryfall\ScryfallIterator;
+use IteratorAggregate;
+use Janhelke\Scryfall\ScryfallIterator;
+use JsonException;
 
 /**
  * Class Sets
  * https://scryfall.com/docs/api/sets
- *
- * @package Scryfall\Responses
  */
-class Sets extends Base implements \IteratorAggregate
+class Sets extends Base implements IteratorAggregate
 {
     /** @var Set[] */
-    protected $sets = [];
+    protected array $sets = [];
 
     /**
      * Expansions constructor.
-     * @param Response $data
+     * @throws JsonException
      */
-    function __construct(Response $data)
+    public function __construct(Response $data)
     {
         parent::__construct($data);
 
-        $response = json_decode($data->getBody()->getContents());
+        $response = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
 
         if (!$this->hasError) {
             // Set some collection data
@@ -36,10 +36,7 @@ class Sets extends Base implements \IteratorAggregate
         }
     }
 
-    /**
-     * @return ScryfallIterator|\Traversable
-     */
-    public function getIterator()
+    public function getIterator(): ScryfallIterator
     {
         return new ScryfallIterator($this->sets);
     }
@@ -47,7 +44,7 @@ class Sets extends Base implements \IteratorAggregate
     /**
      * @return Set[]
      */
-    public function sets()
+    public function sets(): array
     {
         return $this->sets;
     }

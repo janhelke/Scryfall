@@ -1,21 +1,22 @@
 <?php
 
-namespace Ypho\Scryfall;
+namespace Janhelke\Scryfall;
 
+use Exception;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Response;
-use Ypho\Scryfall\Endpoint\Cards;
-use Ypho\Scryfall\Endpoint\Sets;
-use Ypho\Scryfall\Endpoint\Symbols;
-use Ypho\Scryfall\Exception\ScryfallException;
+use Janhelke\Scryfall\Endpoint\Cards;
+use Janhelke\Scryfall\Endpoint\Sets;
+use Janhelke\Scryfall\Endpoint\Symbols;
+use Janhelke\Scryfall\Exception\ScryfallException;
+use JsonException;
 
 class Client
 {
-    /** @var \GuzzleHttp\Client */
-    protected $guzzle;
+    protected \GuzzleHttp\Client $guzzle;
 
-    /** @var string */
-    protected $baseURI;
+    protected string $baseURI = 'https://api.scryfall.com/';
 
     /**
      * Client constructor.
@@ -23,37 +24,22 @@ class Client
      */
     public function __construct($httpClient = null)
     {
-        $this->baseURI = 'https://api.scryfall.com/';
-
-        if (is_null($httpClient)) {
-            $this->guzzle = new \GuzzleHttp\Client([
-                'base_uri' => $this->baseURI,
-            ]);
-        } else {
-            $this->guzzle = $httpClient;
-        }
+        $this->guzzle = is_null($httpClient) ? new \GuzzleHttp\Client([
+            'base_uri' => $this->baseURI,
+        ]) : $httpClient;
     }
 
-    /**
-     * @return Sets
-     */
-    public function sets()
+    public function sets(): Sets
     {
         return new Sets($this);
     }
 
-    /**
-     * @return Cards
-     */
-    public function cards()
+    public function cards(): Cards
     {
         return new Cards($this);
     }
 
-    /**
-     * @return Symbols
-     */
-    public function symbols()
+    public function symbols(): Symbols
     {
         return new Symbols($this);
     }
@@ -62,10 +48,10 @@ class Client
      * @param $method
      * @param $url
      * @param null $parameters
-     * @return Response
+     * @throws JsonException
      * @throws ScryfallException
      */
-    public function send($method, $url, $parameters = null)
+    public function send($method, $url, $parameters = null): ?Response
     {
         try {
             // If we have GET or PUT, and we have parameters, add them to the URL
@@ -75,27 +61,29 @@ class Client
 
             /** @var Response $response */
             $response = $this->guzzle->request($method, $this->baseURI . $url, [
-                'body' => (in_array($method, ['POST']) ? $this->getXml($parameters) : '')
+                'body' => ($method === 'POST' ? $this->getXml($parameters) : ''),
             ]);
 
             return $response;
-        } catch (ClientException $ex) {
-            $json = json_decode($ex->getResponse()->getBody()->getContents());
-            throw new ScryfallException($json->details, $ex->getCode());
-        }  catch (\GuzzleHttp\Exception\GuzzleException $ex) {
-            throw new ScryfallException($ex->getMessage(), $ex->getCode());
-        } catch (\Exception $ex) {
-            throw new ScryfallException($ex->getMessage(), $ex->getCode());
+        } catch (ClientException $clientException) {
+            $json = json_decode(
+                $clientException->getResponse()->getBody()->getContents(),
+                false,
+                512,
+                JSON_THROW_ON_ERROR
+            );
+            throw new ScryfallException($json->details, $clientException->getCode());
+        } catch (GuzzleException $guzzleException) {
+            throw new ScryfallException($guzzleException->getMessage(), $guzzleException->getCode());
+        } catch (Exception $exception) {
+            throw new ScryfallException($exception->getMessage(), $exception->getCode());
         }
     }
 
     /**
      * Converts an array of parameters to a valid string
-     *
-     * @param array $parameters
-     * @return string
      */
-    protected function generateParameterString($parameters)
+    protected function generateParameterString(array $parameters): string
     {
         // Start string with ?
         $string = '?';
@@ -109,8 +97,6 @@ class Client
         }
 
         // Remove last &
-        $string = substr($string, 0, -1);
-
-        return $string;
+        return substr($string, 0, -1);
     }
 }

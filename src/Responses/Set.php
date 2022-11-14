@@ -1,62 +1,51 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
-use Ypho\Scryfall\Client;
+use Janhelke\Scryfall\Client;
+use Janhelke\Scryfall\Exception\ScryfallException;
+use JsonException;
 
 /**
  * Class Set
- * @package Scryfall\Responses
  */
 class Set extends Base
 {
-    /** @var string */
-    public $object;
+    public string $object;
 
-    /** @var string */
-    public $parent;
+    public ?string $parent;
 
-    /** @var string */
-    public $code;
+    public string $code;
 
-    /** @var string */
-    public $mtgoCode;
+    public ?string $mtgoCode;
 
-    /** @var string */
-    public $name;
+    public string $name;
 
-    /** @var string */
-    public $release;
+    public ?string $release;
 
-    /** @var string */
-    public $setType;
+    public string $setType;
 
-    /** @var string */
-    public $block;
+    public ?string $block;
 
-    /** @var string */
-    public $blockCode;
+    public ?string $blockCode;
 
-    /** @var int */
-    public $cardCount;
+    public int $cardCount;
 
-    /** @var bool */
-    public $digitalOnly;
+    public bool $digitalOnly;
 
-    /** @var bool */
-    public $foilOnly;
+    public bool $foilOnly;
 
     /**
      * Set constructor.
      * @param $data
-     * @param bool $initialize
+     * @throws JsonException
      */
-    function __construct($data, $initialize = true)
+    public function __construct($data, bool $initialize = true)
     {
-        if($data instanceof Response) {
+        if ($data instanceof Response) {
             parent::__construct($data, $initialize);
-            $data = json_decode($data->getBody()->getContents());
+            $data = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
         } else {
             parent::__construct(null, false);
         }
@@ -76,11 +65,9 @@ class Set extends Base
     }
 
     /**
-     * @param Client $client
-     * @return Cards
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
      */
-    public function getCards(Client $client)
+    public function getCards(Client $client): ?Cards
     {
         return $client->cards()->search('set:' . $this->code, 'prints', 'set');
     }

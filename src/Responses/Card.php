@@ -1,173 +1,131 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
-use Ypho\Scryfall\ScryfallIterator;
+use Janhelke\Scryfall\ScryfallIterator;
+use JsonException;
+use stdClass;
 
 /**
  * Class Card
- * @package Scryfall\Responses
  */
 class Card extends Base
 {
-    /** @var string */
-    public $object;
+    public string $object;
 
-    /** @var int */
-    public $idScryfall;
+    public string $idScryfall;
 
-    /** @var int */
-    public $idOracle;
+    public string $idOracle;
 
-    /** @var int */
-    public $idMtgo;
+    public ?int $idMtgo;
 
-    /** @var int */
-    public $idMtgoFoil;
+    public ?int $idMtgoFoil;
 
-    /** @var int */
-    public $idArena;
+    public ?int $idArena;
 
-    /** @var int[] */
-    public $idsMultiverse;
+    /** @var int[]|null */
+    public ?array $idsMultiverse = [];
 
-    /** @var string */
-    public $language;
+    public string $language;
 
-    /** @var string */
-    public $name;
+    public string $name;
 
-    /** @var string */
-    public $printedName;
+    public ?string $printedName;
 
-    /** @var string */
-    public $type;
+    public string $type;
 
-    /** @var string */
-    public $printedType;
+    public ?string $printedType;
 
-    /** @var string */
-    public $oracleText;
+    public ?string $oracleText;
 
-    /** @var string */
-    public $printedText;
+    public ?string $printedText;
 
-    /** @var string */
-    public $flavorText;
+    public ?string $flavorText;
 
-    /** @var string */
-    public $manaCost;
+    public string $manaCost;
 
-    /** @var float */
-    public $cmc;
+    public ?float $cmc;
+
+    /** @var string[]|null */
+    public ?array $colors = [];
 
     /** @var string[] */
-    public $colors;
+    public array $colorIdentity = [];
 
-    /** @var string[] */
-    public $colorIdentity;
+    /** @var string[]|null */
+    public ?array $colorIndicator = [];
 
-    /** @var string[] */
-    public $colorIndicator;
+    public string $number;
 
-    /** @var string */
-    public $number;
+    public string $rarity;
 
-    /** @var string */
-    public $rarity;
+    public ?string $power;
 
-    /** @var string */
-    public $power;
+    public ?string $toughness;
 
-    /** @var string */
-    public $toughness;
+    public ?string $loyalty;
 
-    /** @var string */
-    public $loyalty;
+    /** @var CardFace[]|null */
+    public ?array $cardFaces = [];
 
-    /** @var CardFace[] */
-    public $cardFaces;
+    public string $set;
 
-    /** @var string */
-    public $set;
+    public string $setName;
 
-    /** @var string */
-    public $setName;
+    public string $layout;
 
-    /** @var string */
-    public $layout;
+    public string $frame;
 
-    /** @var string */
-    public $frame;
+    public string $borderColor;
 
-    /** @var string */
-    public $borderColor;
+    public ?string $watermark;
 
-    /** @var string */
-    public $watermark;
+    public ?string $artist;
 
-    /** @var string */
-    public $artist;
+    public ?string $handModifier;
 
-    /** @var string */
-    public $handModifier;
+    public ?string $lifeModifier;
 
-    /** @var string */
-    public $lifeModifier;
+    public bool $isReserved;
 
-    /** @var bool */
-    public $isReserved;
+    public bool $isFoil;
 
-    /** @var bool */
-    public $isFoil;
+    public bool $isNonFoil;
 
-    /** @var bool */
-    public $isNonFoil;
+    public bool $isReprint;
 
-    /** @var bool */
-    public $isReprint;
+    public bool $isOversized;
 
-    /** @var bool */
-    public $isOversized;
+    public bool $isDigital;
 
-    /** @var bool */
-    public $isDigital;
+    public bool $isFullart;
 
-    /** @var bool */
-    public $isFullart;
+    public ?bool $isTimeshifted;
 
-    /** @var bool */
-    public $isTimeshifted;
+    public ?bool $isColorshifted;
 
-    /** @var bool */
-    public $isColorshifted;
+    public ?bool $isFutureshifted;
 
-    /** @var bool */
-    public $isFutureshifted;
+    public stdClass $legalities;
 
-    /** @var \stdClass */
-    public $legalities;
+    public stdClass $images;
 
-    /** @var \stdClass */
-    public $images;
+    public stdClass $prices;
 
-    /** @var \stdClass */
-    public $prices;
-
-    /** @var \stdClass[] */
-    public $related;
+    /** @var stdClass[] */
+    public array $related = [];
 
     /**
      * Set constructor.
      * @param $data
-     * @param bool $initialize
+     * @throws JsonException
      */
-    function __construct($data, $initialize = true)
+    public function __construct($data, bool $initialize = true)
     {
-        if($data instanceof Response) {
+        if ($data instanceof Response) {
             parent::__construct($data, $initialize);
-            $data = json_decode($data->getBody()->getContents());
+            $data = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
         } else {
             parent::__construct(null, false);
         }
@@ -223,16 +181,16 @@ class Card extends Base
         $this->isColorshifted = @$data->colorshifted;
         $this->isFutureshifted = @$data->futureshifted;
 
-        if(isset($data->card_faces)) {
-            foreach($data->card_faces as $face) {
+        if (property_exists($data, 'card_faces') && $data->card_faces !== null) {
+            foreach ($data->card_faces as $face) {
                 $this->cardFaces[] = new CardFace($face, false);
             }
         }
 
-        if(isset($data->legalities)) {
+        if (property_exists($data, 'legalities') && $data->legalities !== null) {
             $legalities = $data->legalities;
 
-            $this->legalities = new \stdClass();
+            $this->legalities = new stdClass();
             $this->legalities->standard = $this->isLegal(@$legalities->standard);
             $this->legalities->modern = $this->isLegal(@$legalities->modern);
             $this->legalities->legacy = $this->isLegal(@$legalities->legacy);
@@ -247,10 +205,10 @@ class Card extends Base
             $this->legalities->{'1v1'} = $this->isLegal(@$legalities->{'1v1'});
         }
 
-        if(isset($data->image_uris)) {
+        if (property_exists($data, 'image_uris') && $data->image_uris !== null) {
             $images = $data->image_uris;
 
-            $this->images = new \stdClass();
+            $this->images = new stdClass();
             $this->images->small = @$images->small;
             $this->images->normal = @$images->normal;
             $this->images->large = @$images->large;
@@ -259,16 +217,19 @@ class Card extends Base
             $this->images->border_crop = @$images->border_crop;
         }
 
-        if(isset($data->usd) || isset($data->eur) || isset($data->tix)) {
-            $this->prices = new \stdClass();
+        if ((property_exists($data, 'usd') && $data->usd !== null) || (property_exists(
+            $data,
+            'eur'
+        ) && $data->eur !== null) || (property_exists($data, 'tix') && $data->tix !== null)) {
+            $this->prices = new stdClass();
             $this->prices->usd = @$data->usd;
             $this->prices->eur = @$data->eur;
             $this->prices->tix = @$data->tix;
         }
 
-        if(isset($data->all_parts)) {
-            foreach($data->all_parts as $part) {
-                $related = new \stdClass();
+        if (property_exists($data, 'all_parts') && $data->all_parts !== null) {
+            foreach ($data->all_parts as $part) {
+                $related = new stdClass();
                 $related->object = @$part->object;
                 $related->id = @$part->id;
                 $related->name = @$part->name;
@@ -278,28 +239,21 @@ class Card extends Base
         }
     }
 
-    /**
-     * @return ScryfallIterator
-     */
-    public function getFaces()
+    public function getFaces(): ScryfallIterator
     {
         return new ScryfallIterator($this->cardFaces);
     }
 
-    /**
-     * @return ScryfallIterator
-     */
-    public function getRelated()
+    public function getRelated(): ScryfallIterator
     {
         return new ScryfallIterator($this->related);
     }
 
     /**
      * @param $value
-     * @return bool
      */
-    private function isLegal($value)
+    private function isLegal($value): bool
     {
-        return ($value === 'legal');
+        return $value === 'legal';
     }
 }

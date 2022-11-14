@@ -1,48 +1,40 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
+use JsonException;
 
 /**
  * Class Manacost
  * https://scryfall.com/docs/api/card-symbols/parse-mana
- *
- * @package Scryfall\Responses
  */
 class ParsedMana extends Base
 {
-    /** @var string */
-    public $object;
+    public string $object;
 
-    /** @var string */
-    public $cost;
+    public string $cost;
 
-    /** @var array */
-    public $colors;
+    public array $colors = [];
 
-    /** @var int */
-    public $cmc;
+    public int $cmc;
 
-    /** @var bool */
-    public $isColorless;
+    public bool $isColorless;
 
-    /** @var bool */
-    public $isMonoColor;
+    public bool $isMonoColor;
 
-    /** @var bool */
-    public $isMultiColor;
+    public bool $isMultiColor;
 
     /**
      * Set constructor.
      * @param $data
-     * @param bool $initialize
+     * @throws JsonException
      */
-    function __construct($data, $initialize = true)
+    public function __construct($data)
     {
-        if($data instanceof Response) {
+        if ($data instanceof Response) {
             parent::__construct($data);
-            $data = json_decode($data->getBody()->getContents());
+            $data = json_decode($data->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
         } else {
             parent::__construct(null, false);
         }

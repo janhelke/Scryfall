@@ -2,42 +2,38 @@
 
 namespace Tests\Endpoint;
 
+use Exception;
+use Janhelke\Scryfall\Exception\ScryfallException;
+use Janhelke\Scryfall\Responses\Symbol;
 use Tests\TestCase;
-use Ypho\Scryfall\Exception\ScryfallException;
-use Ypho\Scryfall\Responses\ParsedMana;
-use Ypho\Scryfall\Responses\Symbol;
-use Ypho\Scryfall\Responses\Symbols;
 
 class SymbolsTest extends TestCase
 {
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
+     * @throws Exception
      */
-    public function testAllSymbols()
+    public function testAllSymbols(): void
     {
         $client = $this->getMockedClient('symbols/all.json');
         $symbols = $client->symbols()->all();
-
-        $this->assertInstanceOf(Symbols::class, $symbols);
-        $this->assertContainsOnlyInstancesOf(Symbol::class, $symbols->getIterator());
+        self::assertContainsOnlyInstancesOf(Symbol::class, $symbols->getIterator());
     }
 
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
      */
-    public function testParseManacost()
+    public function testParseManacost(): void
     {
         $client = $this->getMockedClient('symbols/parse.json');
         $manacost = $client->symbols()->parse('rgx');
-
-        $this->assertInstanceOf(ParsedMana::class, $manacost);
-        $this->assertEquals('{X}{R}{G}', $manacost->cost);
+        self::assertEquals('{X}{R}{G}', $manacost->cost);
     }
 
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
      */
-    public function testParseWrongManaCost()
+    public function testParseWrongManaCost(): void
     {
         $client = $this->getMockedClient('symbols/error_parsing.json', 429);
 

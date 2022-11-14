@@ -1,38 +1,30 @@
 <?php
 
-namespace Ypho\Scryfall\Responses;
+namespace Janhelke\Scryfall\Responses;
 
 use GuzzleHttp\Psr7\Response;
 
 class Base
 {
-    /** @var int */
-    protected $statusCode;
+    protected int $statusCode;
 
-    /** @var string */
-    protected $message;
+    protected string $message;
 
-    /** @var bool */
-    protected $hasError = false;
+    protected bool $hasError = false;
 
-    /** @var string */
-    protected $errorMessage;
+    protected string $errorMessage;
 
-    /** @var int */
-    private $count;
+    private ?int $count = null;
 
-    /** @var int */
-    private $total;
+    private ?int $total = null;
 
-    /** @var bool */
-    private $hasMore = false;
+    private bool $hasMore = false;
 
     /**
      * Base constructor.
-     * @param Response $data
-     * @param bool $initialize
+     * @param Response|null $data
      */
-    public function __construct($data = null, $initialize = true)
+    public function __construct(Response $data = null, bool $initialize = true)
     {
         if ($initialize) {
             $this->statusCode = @$data->getStatusCode();
@@ -44,50 +36,35 @@ class Base
                 unset($this->errorMessage);
             }
         } else {
-            unset($this->statusCode);
-            unset($this->message);
-            unset($this->hasError);
-            unset($this->errorMessage);
+            unset($this->statusCode, $this->message, $this->hasError, $this->errorMessage);
         }
     }
 
-    /**
-     * @param int $count
-     * @param int $total
-     * @param bool $hasMore
-     */
-    protected function setCollectionData(int $count, int $total = 0, bool $hasMore = false)
+    public function setStatusCode(int $statusCode): Base
+    {
+        $this->statusCode = $statusCode;
+        return $this;
+    }
+
+    protected function setCollectionData(int $count, int $total = 0, bool $hasMore = false): void
     {
         $this->count = $count;
         $this->total = $total;
 
-        if ($hasMore && $this->total > 0 && $this->count > 0) {
-            $this->hasMore = true;
-        } else {
-            $this->hasMore = false;
-        }
+        $this->hasMore = $hasMore && $this->total > 0 && $this->count > 0;
     }
 
-    /**
-     * @return int
-     */
-    public function count()
+    public function count(): ?int
     {
         return $this->count;
     }
 
-    /**
-     * @return int
-     */
-    public function total()
+    public function total(): ?int
     {
         return $this->total;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasMore()
+    public function hasMore(): bool
     {
         return $this->hasMore;
     }

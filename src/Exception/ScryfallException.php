@@ -1,15 +1,16 @@
 <?php
 
-namespace Ypho\Scryfall\Exception;
+namespace Janhelke\Scryfall\Exception;
 
-class ScryfallException extends \Exception
+use Exception;
+
+class ScryfallException extends Exception
 {
     /**
      * ScryfallException constructor.
      * @param null $message
-     * @param int $code
      */
-    public function __construct($message = null, $code = 400)
+    public function __construct($message = null, int $code = 400)
     {
         $this->message = $message;
         $this->code = $code;

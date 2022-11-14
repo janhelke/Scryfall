@@ -1,109 +1,117 @@
 <?php
 
-namespace Ypho\Scryfall\Endpoint;
+namespace Janhelke\Scryfall\Endpoint;
 
-use Ypho\Scryfall\Client;
-use Ypho\Scryfall\Exception\ScryfallException;
-use Ypho\Scryfall\Responses\Card;
-use Ypho\Scryfall\Responses\Rulings;
+use Exception;
+use Janhelke\Scryfall\Client;
+use Janhelke\Scryfall\Exception\ScryfallException;
+use Janhelke\Scryfall\Responses\Card;
+use Janhelke\Scryfall\Responses\Rulings;
 
 class Cards
 {
-    /** @var Client */
-    protected $client;
+    protected Client $client;
 
     /**
      * Account constructor.
      * @param $client
      */
-    function __construct($client)
+    public function __construct($client)
     {
         $this->client = $client;
     }
 
     /**
-     * @param int $page
-     * @return \Ypho\Scryfall\Responses\Cards
      * @throws ScryfallException
      */
-    public function all($page = 1)
+    public function all(int $page = 1): ?\Janhelke\Scryfall\Responses\Cards
     {
         try {
-            $response = $this->client->send('GET', 'cards?page=' . (int)$page);
-            $cards = new \Ypho\Scryfall\Responses\Cards($response);
-            return $cards;
-        } catch (\Exception $ex) {
-            throw new ScryfallException($ex->getMessage(), $ex->getCode());
+            $response = $this->client->send('GET', 'cards?page=' . $page);
+            return new \Janhelke\Scryfall\Responses\Cards($response);
+        } catch (Exception $exception) {
+            throw new ScryfallException($exception->getMessage(), $exception->getCode());
         }
     }
 
     /**
      * @param $id
-     * @return Card
      * @throws ScryfallException
      */
-    public function get($id)
+    public function get($id): ?Card
     {
         try {
             $response = $this->client->send('GET', 'cards/' . $id);
-            $card = new Card($response);
-            return $card;
-        } catch (\Exception $ex) {
-            throw new ScryfallException($ex->getMessage(), $ex->getCode());
+            return new Card($response);
+        } catch (Exception $exception) {
+            throw new ScryfallException($exception->getMessage(), $exception->getCode());
+        }
+    }
+
+    /**
+     * https://scryfall.com/docs/api/cards/collector
+     * GET /cards/:code/:number(/:lang)
+     *
+     * @throws ScryfallException
+     */
+    public function getFromSetByNumber(string $code, int $number, string $language = ''): ?Card
+    {
+        try {
+            $response = $this->client->send('GET', 'cards/' . $code . '/' . $number . (empty($language) ? '' : '/' . $language));
+            return new Card($response);
+        } catch (Exception $exception) {
+            throw new ScryfallException($exception->getMessage(), $exception->getCode());
         }
     }
 
     /**
      * @param $query
-     * @param string $unique
-     * @param string $order
-     * @param string $dir
-     * @param bool $extras
-     * @param bool $multilang
-     * @param int $page
-     * @return \Ypho\Scryfall\Responses\Cards
      * @throws ScryfallException
      */
-    public function search($query, $unique='cards', $order='name', $dir='auto', $extras=false, $multilang=false, $page=1)
-    {
+    public function search(
+        $query,
+        string $unique = 'cards',
+        string $order = 'name',
+        string $dir = 'auto',
+        bool $extras = false,
+        bool $multilang = false,
+        int $page = 1
+    ): ?\Janhelke\Scryfall\Responses\Cards {
         try {
             // Build string
             $queryString = '?q=' . $query;
-            $queryString.= '&unique=' . $unique;
-            $queryString.= '&order=' . $order;
-            $queryString.= '&dir=' . $dir;
-            $queryString.= '&include_extras=' . $extras;
-            $queryString.= '&include_multilingual=' . $multilang;
-            $queryString.= '&page=' . $page;
+            $queryString .= '&unique=' . $unique;
+            $queryString .= '&order=' . $order;
+            $queryString .= '&dir=' . $dir;
+            $queryString .= '&include_extras=' . $extras;
+            $queryString .= '&include_multilingual=' . $multilang;
+            $queryString .= '&page=' . $page;
 
             $response = $this->client->send('GET', 'cards/search' . $queryString);
-            $cards = new \Ypho\Scryfall\Responses\Cards($response);
-            return $cards;
-        } catch (\Exception $ex) {
-            throw new ScryfallException($ex->getMessage(), $ex->getCode());
+            return new \Janhelke\Scryfall\Responses\Cards($response);
+        } catch (Exception $exception) {
+            throw new ScryfallException($exception->getMessage(), $exception->getCode());
         }
     }
 
     /**
      * @param $id
      * @param null $type
-     * @return Rulings
      * @throws ScryfallException
      */
-    public function rulings($id, $type=null)
+    public function rulings($id, $type = null): ?Rulings
     {
         $url = 'cards/';
 
-        if(!is_null($type)) {
+        if (!is_null($type)) {
             $url .= $type . '/';
         }
 
         try {
             $response = $this->client->send('GET', $url . $id . '/rulings');
-            $rulings = new Rulings($response);
-            return $rulings;
-        } catch (\Exception $ex) {
-            throw new ScryfallException($ex->getMessage(), $ex->getCode());
+            return new Rulings($response);
+        } catch (Exception $exception) {
+            throw new ScryfallException($exception->getMessage(), $exception->getCode());
         }
     }
 }

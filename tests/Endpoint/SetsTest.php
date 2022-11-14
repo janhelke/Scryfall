@@ -2,38 +2,28 @@
 
 namespace Tests\Endpoint;
 
+use Exception;
+use Janhelke\Scryfall\Exception\ScryfallException;
+use Janhelke\Scryfall\Responses\Set;
 use Tests\TestCase;
-use Ypho\Scryfall\Exception\ScryfallException;
-use Ypho\Scryfall\Responses\Set;
-use Ypho\Scryfall\Responses\Sets;
 
 class SetsTest extends TestCase
 {
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
+     * @throws Exception
      */
-    public function testGetAllSets()
+    public function testGetAllSets(): void
     {
         $client = $this->getMockedClient('sets/all.json');
         $sets = $client->sets()->all();
-        $this->assertInstanceOf(Sets::class, $sets);
-        $this->assertContainsOnlyInstancesOf(Set::class, $sets->getIterator());
+        self::assertContainsOnlyInstancesOf(Set::class, $sets->getIterator());
     }
 
     /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
+     * @throws ScryfallException
      */
-    public function testGetSingleSet()
-    {
-        $client = $this->getMockedClient('sets/single_set.json');
-        $set = $client->sets()->get('avr');
-        $this->assertInstanceOf(Set::class, $set);
-    }
-
-    /**
-     * @throws \Ypho\Scryfall\Exception\ScryfallException
-     */
-    public function testGetInvalidSet()
+    public function testGetInvalidSet(): void
     {
         $client = $this->getMockedClient('sets/set_not_found.json', 404);
 
@@ -42,6 +32,5 @@ class SetsTest extends TestCase
         $this->expectExceptionMessage('No set found for the given code.');
 
         $client->sets()->get('wrong_code');
-
     }
 }

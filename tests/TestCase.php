@@ -2,17 +2,12 @@
 
 namespace Tests;
 
+use Janhelke\Scryfall\Client;
 use Tests\TestSupport\HandlerFactory;
-use Ypho\Scryfall\Client;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
-    /**
-     * @param string $method
-     * @param int $statusCode
-     * @return Client
-     */
-    protected function getMockedClient(string $method, int $statusCode = 200)
+    protected function getMockedClient(string $method, int $statusCode = 200): Client
     {
         $handler = HandlerFactory::getHandler($method, $statusCode);
 
@@ -21,8 +16,6 @@ class TestCase extends \PHPUnit\Framework\TestCase
             'base_uri' => 'https://api.scryfall.com/',
         ]);
 
-        $client = new Client($httpClient);
-
-        return $client;
+        return new Client($httpClient);
     }
 }
